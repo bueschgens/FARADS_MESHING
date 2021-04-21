@@ -24,5 +24,7 @@ module FARADS_MESHING
 
     export import_tgrid
 
+    export get_nvec, get_com_and_area
+
 
 end
