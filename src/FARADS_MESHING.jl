@@ -10,6 +10,8 @@ module FARADS_MESHING
     include("./ext_tgrid_fct.jl")
     include("./ext_import_fct.jl")
 
+    include("./mat_fct.jl")
+
     export Disc3D, Face, Part
 
     export Mesh3D, VecMesh3D
