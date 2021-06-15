@@ -26,5 +26,7 @@ module FARADS_MESHING
 
     export get_nvec, get_com_and_area
 
+    export convert_mesh_mat2struct
+
 
 end
