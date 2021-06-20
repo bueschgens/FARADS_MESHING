@@ -1,6 +1,8 @@
 module FARADS_MESHING
 
     using FARADS_GEOM
+
+    using WriteVTK
     
     include("./discret_types.jl")
     include("./discret_fct.jl")
@@ -11,6 +13,8 @@ module FARADS_MESHING
     include("./ext_import_fct.jl")
 
     include("./mat_fct.jl")
+
+    include("./ext_export_fct.jl")
 
     export Disc3D, Face, Part
 
@@ -29,6 +33,8 @@ module FARADS_MESHING
     export get_nvec, get_com_and_area
 
     export convert_mesh_mat2struct
+
+    export export_vtk
 
 
 end
