@@ -3,6 +3,7 @@ module FARADS_MESHING
     using FARADS_GEOM
 
     using WriteVTK
+    using MAT
     
     include("./discret_types.jl")
     include("./discret_fct.jl")
