@@ -116,9 +116,26 @@ end
 
 function reverse_nvec_of_faces!(part::Part; faces = 1:size(part.faces,1))
     # reverse nvec dir of face(s) f from part p
+	# @show part.faces[1].elements
     for i in faces
         part.faces[i].nvec .*= (-1)
+		# change element numbers col 2 with 3
+		# problemsolver
+		# swapcols!(part.faces[i].elements, 2, 3)
     end
+	# @show part.faces[1].elements
+end
+
+function swapcols!(X::AbstractMatrix, i::Integer, j::Integer)
+	# in place column swap with 0 allocations
+	# X = [1 4 7 10; 2 5 8 11; 3 6 9 12]
+	# @show X
+	# i = 2
+	# j = 3
+    @inbounds for k = 1:size(X,1)
+        X[k,i], X[k,j] = X[k,j], X[k,i]
+    end
+	# @show X
 end
 
 function circle(r, o, phi)
