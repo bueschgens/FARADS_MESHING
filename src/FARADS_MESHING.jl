@@ -37,7 +37,5 @@ module FARADS_MESHING
 
     export export_vtk
 
-    export reverse_node_numbers_of_elements!
-
 
 end

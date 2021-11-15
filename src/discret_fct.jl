@@ -111,30 +111,26 @@ function discretisation(rect::Rectangle{T1}, seed::Vector{T2}) where {T1<:Abstra
 	nvec = nvec .* faktor_nvec
     faces = Vector{Face{T1,T2}}(undef,1)
     faces[1] = Face(elements, com, nvec, area)
+	if faktor_nvec == 1
+		# needs swap on face
+		reverse_node_numbers_of_elements!(faces[1])
+	end
 	return Part(nodes, faces)
 end
 
 function reverse_nvec_of_faces!(part::Part; faces = 1:size(part.faces,1))
     # reverse nvec dir of face(s) f from part p
-	# @show part.faces[1].elements
     for i in faces
         part.faces[i].nvec .*= (-1)
-		# change element numbers col 2 with 3
-		# problemsolver
 		# swapcols!(part.faces[i].elements, 2, 3)
+		reverse_node_numbers_of_elements!(part.faces[i])
     end
-	# @show part.faces[1].elements
 end
 
-function reverse_node_numbers_of_elements!(part::Part; faces = 1:size(part.faces,1))
-    # reverse node numbers of face(s) from part
-	# @show part.faces[1].elements
-    for i in faces
-		# change element numbers col 2 with 3
-		# problemsolver
-		swapcols!(part.faces[i].elements, 2, 3)
-    end
-	# @show part.faces[1].elements
+function reverse_node_numbers_of_elements!(face::Face)
+    # reverse node numbers of face
+	# change element numbers col 2 with 3
+	swapcols!(face.elements, 2, 3)
 end
 
 function swapcols!(X::AbstractMatrix, i::Integer, j::Integer)
