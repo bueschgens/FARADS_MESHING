@@ -126,6 +126,17 @@ function reverse_nvec_of_faces!(part::Part; faces = 1:size(part.faces,1))
 	# @show part.faces[1].elements
 end
 
+function reverse_node_numbers_of_elements!(part::Part; faces = 1:size(part.faces,1))
+    # reverse node numbers of face(s) from part
+	# @show part.faces[1].elements
+    for i in faces
+		# change element numbers col 2 with 3
+		# problemsolver
+		swapcols!(part.faces[i].elements, 2, 3)
+    end
+	# @show part.faces[1].elements
+end
+
 function swapcols!(X::AbstractMatrix, i::Integer, j::Integer)
 	# in place column swap with 0 allocations
 	# X = [1 4 7 10; 2 5 8 11; 3 6 9 12]
