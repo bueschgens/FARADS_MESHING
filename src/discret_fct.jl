@@ -426,3 +426,58 @@ function join_faces_of_part(part::Part{T1, T2}, newfaces::Vector{Vector{T2}}) wh
 	end
 	return Part(part.nodes, faces)
 end
+
+function debug_element_node_numbering(part::Part)
+	# debug part for element nodes numbering
+	n_faces = size(part.faces,1)
+
+	wrong = Matrix(undef, 0, 2) # for storing wrong elements of part [face, element]
+
+	for i = 1:n_faces
+
+		n_elem_face = size(part.faces[i].elements,1)
+
+		for j = 1:n_elem_face
+			
+			nodes1 = part.faces[i].elements[j,1]
+			nodes2 = part.faces[i].elements[j,2]
+			nodes3 = part.faces[i].elements[j,3]
+			
+			pointA = part.nodes[nodes1,:]
+			pointB = part.nodes[nodes2,:]
+			pointC = part.nodes[nodes3,:]
+
+			v0 = pointA
+			v1 = pointC
+			v2 = pointB
+
+			dir = part.faces[i].nvec[j,:]
+			dir .*= (-1)
+
+			EPSILON = 1E-10
+			edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
+			edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
+			pvec = [(dir[2]*edge2[3]) - (dir[3]*edge2[2]),
+							 (dir[3]*edge2[1]) - (dir[1]*edge2[3]),
+							 (dir[1]*edge2[2]) - (dir[2]*edge2[1])]
+			det = edge1[1]*pvec[1] + edge1[2]*pvec[2] + edge1[3]*pvec[3]
+
+			if det < EPSILON
+				# println("checking element ", j, " of part ", i)
+				# println("        no intersection: det < EPSILON")
+				wrong = vcat(wrong, [i j])
+			else
+				# println("        intersection possible")
+			end
+
+		end
+
+    end
+
+	n_wrongs = size(wrong,1)
+	if n_wrongs == 0
+		println("debug check found no wrong elements")
+	else
+		println("debug check found ", n_wrongs, " wrong elements")
+	end
+end

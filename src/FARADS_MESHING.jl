@@ -37,5 +37,7 @@ module FARADS_MESHING
 
     export export_vtk
 
+    export debug_element_node_numbering
+
 
 end
