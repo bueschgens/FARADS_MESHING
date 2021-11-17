@@ -118,12 +118,14 @@ function discretisation(rect::Rectangle{T1}, seed::Vector{T2}) where {T1<:Abstra
 	return Part(nodes, faces)
 end
 
-function reverse_nvec_of_faces!(part::Part; faces = 1:size(part.faces,1))
+function reverse_nvec_of_faces!(part::Part; faces = 1:size(part.faces,1), doRevNodeNum = true)
     # reverse nvec dir of face(s) f from part p
     for i in faces
         part.faces[i].nvec .*= (-1)
 		# swapcols!(part.faces[i].elements, 2, 3)
-		reverse_node_numbers_of_elements!(part.faces[i])
+		if doRevNodeNum
+			reverse_node_numbers_of_elements!(part.faces[i])
+		end
     end
 end
 
@@ -427,7 +429,28 @@ function join_faces_of_part(part::Part{T1, T2}, newfaces::Vector{Vector{T2}}) wh
 	return Part(part.nodes, faces)
 end
 
-function debug_element_node_numbering(part::Part)
+function debug_node_numbering_of_element(v0, v1, v2, dir)
+	# check node numbering
+
+	EPSILON = 1E-10
+	edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
+	edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
+	pvec = [(dir[2]*edge2[3]) - (dir[3]*edge2[2]),
+						(dir[3]*edge2[1]) - (dir[1]*edge2[3]),
+						(dir[1]*edge2[2]) - (dir[2]*edge2[1])]
+	det = edge1[1]*pvec[1] + edge1[2]*pvec[2] + edge1[3]*pvec[3]
+
+	if det < EPSILON
+		# println("        no intersection: det < EPSILON")
+		intersection = false
+	else
+		# println("        intersection possible")
+		intersection = true
+	end
+	return intersection
+end
+
+function debug_part_node_numbering2(part::Part)
 	# debug part for element nodes numbering
 	n_faces = size(part.faces,1)
 
@@ -447,13 +470,59 @@ function debug_element_node_numbering(part::Part)
 			pointB = part.nodes[nodes2,:]
 			pointC = part.nodes[nodes3,:]
 
-			v0 = pointA
-			v1 = pointC
-			v2 = pointB
+			dir = part.faces[i].nvec[j,:]
+			dir .*= (-1)
+
+			isintersecting = debug_node_numbering_of_element(pointA, pointC, pointB, dir)
+
+			if isintersecting
+				# println("-> intersection possible")
+			else
+				# println("checking element ", j, " of part ", i)
+				# println("-> no intersection")
+				wrong = vcat(wrong, [i j])
+			end
+
+		end
+
+    end
+
+	n_wrongs = size(wrong,1)
+	if n_wrongs == 0
+		println("debug check found no wrong elements")
+	else
+		println("debug check found ", n_wrongs, " wrong elements")
+	end
+end
+
+
+function debug_part_node_numbering(part::Part)
+	# debug part for element nodes numbering
+	n_faces = size(part.faces,1)
+
+	wrong = Matrix(undef, 0, 2) # for storing wrong elements of part [face, element]
+
+	for i = 1:n_faces
+
+		n_elem_face = size(part.faces[i].elements,1)
+
+		for j = 1:n_elem_face
+			
+			nodes1 = part.faces[i].elements[j,1]
+			nodes2 = part.faces[i].elements[j,2]
+			nodes3 = part.faces[i].elements[j,3]
+			
+			pointA = part.nodes[nodes1,:]
+			pointB = part.nodes[nodes2,:]
+			pointC = part.nodes[nodes3,:]
 
 			dir = part.faces[i].nvec[j,:]
 			dir .*= (-1)
 
+			v0 = pointA
+			v1 = pointC
+			v2 = pointB
+			
 			EPSILON = 1E-10
 			edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
 			edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
