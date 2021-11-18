@@ -431,7 +431,6 @@ end
 
 function debug_node_numbering_of_element(v0, v1, v2, dir)
 	# check node numbering
-
 	EPSILON = 1E-10
 	edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
 	edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
@@ -439,7 +438,6 @@ function debug_node_numbering_of_element(v0, v1, v2, dir)
 						(dir[3]*edge2[1]) - (dir[1]*edge2[3]),
 						(dir[1]*edge2[2]) - (dir[2]*edge2[1])]
 	det = edge1[1]*pvec[1] + edge1[2]*pvec[2] + edge1[3]*pvec[3]
-
 	if det < EPSILON
 		# println("        no intersection: det < EPSILON")
 		intersection = false
@@ -450,27 +448,68 @@ function debug_node_numbering_of_element(v0, v1, v2, dir)
 	return intersection
 end
 
-function debug_part_node_numbering2(part::Part)
+function debug_part_node_numbering(part::Part)
 	# debug part for element nodes numbering
 	n_faces = size(part.faces,1)
-
 	wrong = Matrix(undef, 0, 2) # for storing wrong elements of part [face, element]
-
 	for i = 1:n_faces
-
 		n_elem_face = size(part.faces[i].elements,1)
-
 		for j = 1:n_elem_face
-			
 			nodes1 = part.faces[i].elements[j,1]
 			nodes2 = part.faces[i].elements[j,2]
 			nodes3 = part.faces[i].elements[j,3]
-			
 			pointA = part.nodes[nodes1,:]
 			pointB = part.nodes[nodes2,:]
 			pointC = part.nodes[nodes3,:]
-
 			dir = part.faces[i].nvec[j,:]
+			dir .*= (-1)
+			isintersecting = debug_node_numbering_of_element(pointA, pointC, pointB, dir)
+			if isintersecting
+				# println("-> intersection possible")
+			else
+				# println("checking element ", j, " of part ", i)
+				# println("-> no intersection")
+				wrong = vcat(wrong, [i j])
+			end
+		end
+    end
+	n_wrongs = size(wrong,1)
+	if n_wrongs == 0
+		println("debug check of part found no wrong elements")
+	else
+		println("debug check of part found ", n_wrongs, " wrong elements")
+	end
+end
+
+function debug_model_node_numbering(m::Mesh3D)
+	# debug model for element nodes numbering
+	# output is which face has how many wrong elements and total elements
+
+	n_faces = size(m.elements2faces,1)
+	wrong = Array{Int64,2}(undef, n_faces, 3) # [facenumber, wrong elements, total elements]
+
+	for f = 1:n_faces
+
+		p = get_part_of_face(m, f)
+		n1 = m.nodes2parts[p,3]
+		n2 = m.nodes2parts[p,4]
+		nodes = m.nodes[n1:n2,1:3]
+		e1 = m.elements2faces[f,3]
+		e2 = m.elements2faces[f,4]
+
+		wrong_count = 0
+
+		for j = e1:e2
+			
+			nodes1 = m.elements[j,1]
+			nodes2 = m.elements[j,2]
+			nodes3 = m.elements[j,3]
+			
+			pointA = nodes[nodes1,:]
+			pointB = nodes[nodes2,:]
+			pointC = nodes[nodes3,:]
+
+			dir = m.nvec[j,:]
 			dir .*= (-1)
 
 			isintersecting = debug_node_numbering_of_element(pointA, pointC, pointB, dir)
@@ -480,73 +519,23 @@ function debug_part_node_numbering2(part::Part)
 			else
 				# println("checking element ", j, " of part ", i)
 				# println("-> no intersection")
-				wrong = vcat(wrong, [i j])
+				wrong_count = wrong_count + 1
 			end
 
 		end
 
-    end
-
-	n_wrongs = size(wrong,1)
-	if n_wrongs == 0
-		println("debug check found no wrong elements")
-	else
-		println("debug check found ", n_wrongs, " wrong elements")
-	end
-end
-
-
-function debug_part_node_numbering(part::Part)
-	# debug part for element nodes numbering
-	n_faces = size(part.faces,1)
-
-	wrong = Matrix(undef, 0, 2) # for storing wrong elements of part [face, element]
-
-	for i = 1:n_faces
-
-		n_elem_face = size(part.faces[i].elements,1)
-
-		for j = 1:n_elem_face
-			
-			nodes1 = part.faces[i].elements[j,1]
-			nodes2 = part.faces[i].elements[j,2]
-			nodes3 = part.faces[i].elements[j,3]
-			
-			pointA = part.nodes[nodes1,:]
-			pointB = part.nodes[nodes2,:]
-			pointC = part.nodes[nodes3,:]
-
-			dir = part.faces[i].nvec[j,:]
-			dir .*= (-1)
-
-			v0 = pointA
-			v1 = pointC
-			v2 = pointB
-			
-			EPSILON = 1E-10
-			edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
-			edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
-			pvec = [(dir[2]*edge2[3]) - (dir[3]*edge2[2]),
-							 (dir[3]*edge2[1]) - (dir[1]*edge2[3]),
-							 (dir[1]*edge2[2]) - (dir[2]*edge2[1])]
-			det = edge1[1]*pvec[1] + edge1[2]*pvec[2] + edge1[3]*pvec[3]
-
-			if det < EPSILON
-				# println("checking element ", j, " of part ", i)
-				# println("        no intersection: det < EPSILON")
-				wrong = vcat(wrong, [i j])
-			else
-				# println("        intersection possible")
-			end
-
-		end
+		wrong[f,1] = f
+		wrong[f,2] = wrong_count
+		wrong[f,3] = m.elements2faces[f,2]
 
     end
 
-	n_wrongs = size(wrong,1)
+	n_wrongs = sum(wrong[:,2])
 	if n_wrongs == 0
-		println("debug check found no wrong elements")
+		println("debug check of model found no wrong elements")
 	else
-		println("debug check found ", n_wrongs, " wrong elements")
+		println("debug check of model found ", n_wrongs, " wrong elements")
 	end
+
+	return wrong
 end

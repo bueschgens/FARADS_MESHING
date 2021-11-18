@@ -6,8 +6,11 @@ module FARADS_MESHING
     using MAT
     
     include("./discret_types.jl")
-    include("./discret_fct.jl")
+
     include("./mesh_types.jl")
+
+    include("./discret_fct.jl")
+    
     include("./mesh_compose.jl")
 
     include("./ext_tgrid_fct.jl")
@@ -38,7 +41,7 @@ module FARADS_MESHING
     export export_vtk
 
     export debug_part_node_numbering
-    export debug_part_node_numbering2
+    export debug_model_node_numbering
 
 
 end
