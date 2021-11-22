@@ -431,7 +431,6 @@ end
 
 function debug_node_numbering_of_element(v0, v1, v2, dir)
 	# check node numbering
-	@show dir
 	EPSILON = 1E-10
 	edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
 	edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
@@ -439,7 +438,6 @@ function debug_node_numbering_of_element(v0, v1, v2, dir)
 						(dir[3]*edge2[1]) - (dir[1]*edge2[3]),
 						(dir[1]*edge2[2]) - (dir[2]*edge2[1])]
 	det = edge1[1]*pvec[1] + edge1[2]*pvec[2] + edge1[3]*pvec[3]
-	@show det
 	if det < EPSILON
 		# println("        no intersection: det < EPSILON")
 		intersection = false
@@ -647,7 +645,7 @@ function debug_single_element_of_model_node_numbering(m::Mesh3D, elem)
 	if isintersecting
 		println("-> intersection possible")
 	else
-		println("-> no intersection")
+		println("-> no intersection possible")
 	end
 
 	nvec = m.nvec[elem,:]
@@ -657,6 +655,6 @@ function debug_single_element_of_model_node_numbering(m::Mesh3D, elem)
 	if isright
 		println("-> intersection possible")
 	else
-		println("-> no intersection")
+		println("-> no intersection possible")
 	end
 end

@@ -77,6 +77,7 @@ function import_tgrid(input, orig; deleteInterior = true, scaleFactor = 1)
         end
         facenumber += 1
         faces[facenumber] = Face(felements, com, nvec, area)
+        reverse_node_numbers_of_elements!(faces[facenumber])
     end
 
     # delete node block 1 of interior
