@@ -137,3 +137,47 @@ function get_part_of_face(mym, face)
 	return p
 end
 
+function get_mean_elem_size_of_face(mym, face)
+    p = get_part_of_face(mym, face)
+    n1 = mym.nodes2parts[p,3]
+    n2 = mym.nodes2parts[p,4]
+    nodes = mym.nodes[n1:n2,1:3]
+    e1 = mym.elements2faces[face,3]
+    e2 = mym.elements2faces[face,4]
+    n_elem_face = mym.elements2faces[face,2]
+    elemsize = Array{Float64,1}(undef,n_elem_face)
+    counter = 0
+    for i = e1:e2
+        counter = counter + 1
+        nodes1 = mym.elements[i,1]
+        nodes2 = mym.elements[i,2]
+        nodes3 = mym.elements[i,3]
+        pointA = nodes[nodes1,:]
+	    pointB = nodes[nodes2,:]
+	    pointC = nodes[nodes3,:]
+        edgeAB = [pointB[1]-pointA[1], pointB[2]-pointA[2], pointB[3]-pointA[3]]
+        edgeAC = [pointC[1]-pointA[1], pointC[2]-pointA[2], pointC[3]-pointA[3]]
+        edgeBC = [pointC[1]-pointB[1], pointC[2]-pointB[2], pointC[3]-pointB[3]]
+        lengthAB = mynorm(edgeAB)
+        lengthAC = mynorm(edgeAC)
+        lengthBC = mynorm(edgeBC)
+        elemsize[counter] = (lengthAB + lengthAC + lengthBC) / 3
+    end
+    elemsize_mean = sum(elemsize) / n_elem_face
+    return elemsize_mean
+end
+
+function get_mean_elem_size_of_part(mym, part)
+    f1 = mym.faces2parts[part,3]
+    f2 = mym.faces2parts[part,4]
+    n_faces = mym.faces2parts[part,2]
+    elemsize = Array{Float64,1}(undef,n_faces)
+    counter = 0
+    for i = f1:f2
+        counter = counter + 1
+        elemsize[counter] = get_mean_elem_size_of_face(mym, i)
+    end
+    elemsize_mean = sum(elemsize) / n_faces
+    return elemsize_mean
+end
+

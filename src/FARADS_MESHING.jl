@@ -42,6 +42,14 @@ module FARADS_MESHING
 
     export debug_part_node_numbering
     export debug_model_node_numbering
+    export debug_model_nvec_direction
+    export debug_single_element_of_model_node_numbering
+
+    export reverse_node_numbers_of_elements!
+
+    export get_mean_elem_size_of_face
+    export get_mean_elem_size_of_part
+    export mynorm
 
 
 end

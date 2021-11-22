@@ -431,6 +431,7 @@ end
 
 function debug_node_numbering_of_element(v0, v1, v2, dir)
 	# check node numbering
+	@show dir
 	EPSILON = 1E-10
 	edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
 	edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
@@ -438,6 +439,7 @@ function debug_node_numbering_of_element(v0, v1, v2, dir)
 						(dir[3]*edge2[1]) - (dir[1]*edge2[3]),
 						(dir[1]*edge2[2]) - (dir[2]*edge2[1])]
 	det = edge1[1]*pvec[1] + edge1[2]*pvec[2] + edge1[3]*pvec[3]
+	@show det
 	if det < EPSILON
 		# println("        no intersection: det < EPSILON")
 		intersection = false
@@ -538,4 +540,123 @@ function debug_model_node_numbering(m::Mesh3D)
 	end
 
 	return wrong
+end
+
+
+function debug_model_nvec_direction(m::Mesh3D)
+	# debug model for elements nvec direction
+	# output is which face has how many wrong elements and total elements
+
+	n_faces = size(m.elements2faces,1)
+	wrong = Array{Int64,2}(undef, n_faces, 3) # [facenumber, wrong elements, total elements]
+
+	for f = 1:n_faces
+
+		p = get_part_of_face(m, f)
+		n1 = m.nodes2parts[p,3]
+		n2 = m.nodes2parts[p,4]
+		nodes = m.nodes[n1:n2,1:3]
+		e1 = m.elements2faces[f,3]
+		e2 = m.elements2faces[f,4]
+
+		wrong_count = 0
+
+		for j = e1:e2
+			
+			nodes1 = m.elements[j,1]
+			nodes2 = m.elements[j,2]
+			nodes3 = m.elements[j,3]
+			
+			pointA = nodes[nodes1,:]
+			pointB = nodes[nodes2,:]
+			pointC = nodes[nodes3,:]
+
+			nvec = m.nvec[j,:]
+
+			isright = debug_nvec_direction_of_element(pointA, pointC, pointB, nvec)
+
+			if isright
+				# println("-> intersection possible")
+			else
+				# println("checking element ", j, " of part ", i)
+				# println("-> no intersection")
+				wrong_count = wrong_count + 1
+			end
+
+		end
+
+		wrong[f,1] = f
+		wrong[f,2] = wrong_count
+		wrong[f,3] = m.elements2faces[f,2]
+
+    end
+
+	n_wrongs = sum(wrong[:,2])
+	if n_wrongs == 0
+		println("debug check of model found no wrong elements")
+	else
+		println("debug check of model found ", n_wrongs, " wrong elements")
+	end
+
+	return wrong
+end
+
+function debug_nvec_direction_of_element(v0, v1, v2, nvec)
+	# check nvec direction
+	edge1 = [v1[1]-v0[1], v1[2]-v0[2], v1[3]-v0[3]]
+	edge2 = [v2[1]-v0[1], v2[2]-v0[2], v2[3]-v0[3]]
+	cross_edges = [(edge1[2]*edge2[3]) - (edge1[3]*edge2[2]),
+						(edge1[3]*edge2[1]) - (edge1[1]*edge2[3]),
+						(edge1[1]*edge2[2]) - (edge1[2]*edge2[1])]
+	cross_edges_normed = cross_edges ./ mynorm(cross_edges)
+	if isapprox(sum(cross_edges_normed - nvec), 0.0)
+		# println("        intersection possible")
+		test = true
+	else
+		# println("        intersection not possible")
+		test = false
+	end
+	return test
+end
+
+function debug_single_element_of_model_node_numbering(m::Mesh3D, elem)
+	# debug model for element nodes numbering
+	# output is which face has how many wrong elements and total elements
+
+	println("checking element ", elem, " for node numbering")
+
+	p = m.elementstatus[elem,3]
+
+	n1 = m.nodes2parts[p,3]
+	n2 = m.nodes2parts[p,4]
+	nodes = m.nodes[n1:n2,1:3]
+
+	nodes1 = m.elements[elem,1]
+	nodes2 = m.elements[elem,2]
+	nodes3 = m.elements[elem,3]
+	
+	pointA = nodes[nodes1,:]
+	pointB = nodes[nodes2,:]
+	pointC = nodes[nodes3,:]
+
+	dir = m.nvec[elem,:]
+	dir .*= (-1)
+
+	println("direction check")
+	isintersecting = debug_node_numbering_of_element(pointA, pointC, pointB, dir)
+	if isintersecting
+		println("-> intersection possible")
+	else
+		println("-> no intersection")
+	end
+
+	nvec = m.nvec[elem,:]
+
+	println("nvec check")
+	isright = debug_nvec_direction_of_element(pointA, pointC, pointB, nvec)
+	if isright
+		println("-> intersection possible")
+	else
+		println("-> no intersection")
+	end
 end
