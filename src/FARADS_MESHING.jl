@@ -14,6 +14,7 @@ module FARADS_MESHING
     include("./mesh_compose.jl")
 
     include("./ext_tgrid_fct.jl")
+    include("./ext_abaqus_fct.jl")
     include("./ext_import_fct.jl")
 
     include("./mat_fct.jl")
@@ -32,7 +33,7 @@ module FARADS_MESHING
     export compose_mesh, make_mesh_vector, information_mesh
     export get_part_of_face
 
-    export import_tgrid
+    export import_tgrid, import_abaqus
 
     export get_nvec, get_com_and_area
 

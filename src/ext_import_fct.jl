@@ -96,3 +96,42 @@ function import_tgrid(input, orig; deleteInterior = true, scaleFactor = 1)
 
     return Part(nodesSurf, faces)
 end
+
+
+function import_abaqus(input, orig)
+    # use abaqus reader to import .inp files
+    # only heat transfer tri elements
+    abaqus_raw = importabaqus(input)
+
+    println("raw abaqus mesh imported with ", abaqus_raw.n_nodes, " nodes and ", abaqus_raw.n_elems, " elements")
+
+    # convert abaqus nodes
+    nodes = Array{Float64,2}(undef,abaqus_raw.n_nodes,3)
+    nodes[:,:] = abaqus_raw.nodes[:,2:4]
+
+    # change orig
+    for i = 1:3
+        nodes[:,i] .+= orig[i]
+    end
+
+    # put all elements into 1 face
+    faces = Vector{Face{Float64,Int64}}(undef,1) #only 1 face
+    n_elems_face = abaqus_raw.n_elems
+    felements = zeros(Int64, n_elems_face, 3)
+    felements[:,:] = abaqus_raw.elems[:,2:4]
+    # calculate com area and nvec
+    com = zeros(size(felements,1),3)
+    area = zeros(size(felements,1))
+    nvec = zeros(size(felements,1),3)
+    for i = 1:size(felements,1)
+        x = nodes[felements[i,:],1]
+        y = nodes[felements[i,:],2]
+        z = nodes[felements[i,:],3]
+        com[i,:], area[i] = get_com_and_area(x, y, z)
+        nvec[i,:] = get_nvec(x, y, z)
+    end
+    faces[1] = Face(felements, com, nvec, area)
+    reverse_node_numbers_of_elements!(faces[1])
+
+    return Part(nodes, faces)
+end
