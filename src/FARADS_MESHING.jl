@@ -52,5 +52,6 @@ module FARADS_MESHING
     export get_mean_elem_size_of_part
     export mynorm
 
+    export get_face_of_element
 
 end

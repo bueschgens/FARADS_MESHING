@@ -181,3 +181,18 @@ function get_mean_elem_size_of_part(mym, part)
     return elemsize_mean
 end
 
+function get_face_of_element(mym, elem)
+	# find part of current face
+	if elem > size(mym.elements,1)
+		println("Warning: Element number not available in Mesh")
+		return 0
+	end
+	f = 0
+	for j = 1: size(mym.elements2faces,1)
+		if elem >= mym.elements2faces[j,3] && elem <= mym.elements2faces[j,4]
+			f = j
+			break
+		end
+	end
+	return f
+end
