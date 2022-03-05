@@ -355,7 +355,6 @@ function discretisation(cyl::Cylinder{T1}, seed::Vector{T2}) where {T1<:Abstract
         faces[i] = Face(elements[e1:e2,:], com[e1:e2,:], nvec[e1:e2,:], area[e1:e2])
     end
 	# needs swap on face
-	# TO DO: not sure if 1 or 3 needs to be swapped - here just put 1 but not checked
 	reverse_node_numbers_of_elements!(faces[1])
 	reverse_node_numbers_of_elements!(faces[2])
 	return Part(nodes, faces)
