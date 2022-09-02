@@ -38,6 +38,7 @@ module FARADS_MESHING
     export get_nvec, get_com_and_area
 
     export convert_mesh_mat2struct
+    export convert_MatlabMesh_to_Mesh3D
 
     export export_vtk
 
