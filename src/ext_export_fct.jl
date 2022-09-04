@@ -1,5 +1,5 @@
 
-function export_vtk(m; filename = "my_vtm_file", cdata1 = nothing, cdata2 = nothing, cdata3 = nothing)
+function export_vtk(m; filename = "my_vtm_file", cname1 = "my_cell_data1", cdata1 = nothing, cname2 = "my_cell_data2", cdata2 = nothing, cname3 = "my_cell_data3", cdata3 = nothing)
 
     vtmfile = vtk_multiblock(filename)
 
@@ -32,15 +32,15 @@ function export_vtk(m; filename = "my_vtm_file", cdata1 = nothing, cdata2 = noth
             vtkfile = vtk_grid(vtmfile, points, cells)
 
             if !isnothing(cdata1)
-                vtkfile["my_cell_data1", VTKCellData()] = cdata1[e1:e2,:]
+                vtkfile[cname1, VTKCellData()] = cdata1[e1:e2,:]
             end
 
             if !isnothing(cdata2)
-                vtkfile["my_cell_data2", VTKCellData()] = cdata2[e1:e2,:]
+                vtkfile[cname2, VTKCellData()] = cdata2[e1:e2,:]
             end
 
             if !isnothing(cdata3)
-                vtkfile["my_cell_data3", VTKCellData()] = cdata3[e1:e2,:]
+                vtkfile[cname3, VTKCellData()] = cdata3[e1:e2,:]
             end
             
             cdataip = ones(m.elements2faces[ifc,2]) * ip
