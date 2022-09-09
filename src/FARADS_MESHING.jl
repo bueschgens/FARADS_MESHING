@@ -55,4 +55,6 @@ module FARADS_MESHING
 
     export get_face_of_element
 
+    export get_min_and_max_coords_of_face
+
 end

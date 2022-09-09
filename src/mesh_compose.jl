@@ -196,3 +196,31 @@ function get_face_of_element(mym, elem)
 	end
 	return f
 end
+
+function get_min_and_max_coords_of_face(mym, faces)
+    # get min max coords of face
+    nodes_faces = zeros(0,3)
+    for f in faces
+        p = get_part_of_face(mym, f)
+        n1 = mym.nodes2parts[p,3]
+        n2 = mym.nodes2parts[p,4]
+        nodes = mym.nodes[n1:n2,1:3]
+        e1 = mym.elements2faces[f,3]
+        e2 = mym.elements2faces[f,4]
+        n_elem_face = mym.elements2faces[f,2]
+        elem_nodes = Vector{Int64}(undef, n_elem_face * 3)
+        elem_nodes[1:n_elem_face] = mym.elements[e1:e2,1]
+        elem_nodes[n_elem_face+1:2*n_elem_face] = mym.elements[e1:e2,2]
+        elem_nodes[2*n_elem_face+1:3*n_elem_face] = mym.elements[e1:e2,3]
+        # @show size(elem_nodes)
+        elem_nodes_unique = unique(elem_nodes)
+        # @show size(elem_nodes_unique)
+        nodes_face = nodes[elem_nodes_unique,:]
+        # @show size(nodes_face)
+        nodes_faces = vcat(nodes_faces, nodes_face)
+    end
+    # @show size(nodes_faces)
+    println("X: ", minimum(nodes_faces[:,1]), " -> ", maximum(nodes_faces[:,1]))
+    println("Y: ", minimum(nodes_faces[:,2]), " -> ", maximum(nodes_faces[:,2]))
+    println("Z: ", minimum(nodes_faces[:,3]), " -> ", maximum(nodes_faces[:,3]))
+end
