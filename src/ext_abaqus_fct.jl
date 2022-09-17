@@ -15,7 +15,8 @@ end
 function importabaqus(filename::String)
     io = Base.open(filename, "r")
     sections = getSections(io)
-    myAbaqus = evalSections(sections)
+    # @show size(sections)
+    myAbaqus = evalSections(sections[1:2])
     return myAbaqus
 end
 
