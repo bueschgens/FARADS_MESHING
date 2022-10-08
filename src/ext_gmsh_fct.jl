@@ -1,11 +1,10 @@
-#module GMSHreader
 #=
 Read GMSH files:
 
 Supported MeshFormat 4, ASCII
 
 Supported File Groups:
-    - MeshFomrat
+    - MeshFormat
     - PhysicalNames
     - Entities
     - Nodes
@@ -71,13 +70,9 @@ GMSH Element Types:
 93: 125-node fourth order hexahedron (8 nodes associated with the vertices,
     36 with the edges, 54 with the faces, 27 in the volume)
 
-@ 2019 Christian Schubert
-mod by dominik.bueschgens jan 2021
+@ 2019 c schubert
+@ 2021 modified by bueschgens
 =#
-# using FEMMesh
-
-#export readGMSH
-#export GMSH
 
 elementTypeID_NodeCount = [2,3,4,4,8,6,5,3,6,9,10,27,18,14,1,8,20,15,13,9,10,12,15,25,21,
                         4,5,6,20,35,56]
@@ -669,6 +664,3 @@ function evalElementsBlock(blockContent::Array{SubString{String},1})
     return elementGroups
 
 end
-
-
-#end
